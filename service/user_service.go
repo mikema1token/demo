@@ -1,6 +1,7 @@
 package service
 
 import (
+	"demo/cache"
 	"demo/db"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -29,6 +30,14 @@ func GetuserById(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	userListCache, err := cache.GetUserListCache()
+	if err == nil {
+		for _, userModel := range userListCache {
+			if int(userModel.ID) == userId {
+				c.JSON(http.StatusOK, gin.H{"data": NewUserFromUserModel(userModel)})
+			}
+		}
+	}
 	user, err := db.GetUserById(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -38,12 +47,20 @@ func GetuserById(c *gin.Context) {
 }
 
 func GetuserList(c *gin.Context) {
+	var userList []User
+	userListCache, err := cache.GetUserListCache()
+	if err == nil {
+		for _, userModel := range userListCache {
+			userList = append(userList, NewUserFromUserModel(userModel))
+		}
+		c.JSON(http.StatusOK, gin.H{"data": userList})
+
+	}
 	userModelList, err := db.GetUserList()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	var userList []User
 	for _, userModel := range userModelList {
 		userList = append(userList, NewUserFromUserModel(userModel))
 	}
@@ -66,6 +83,11 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	err = cache.DeleteUserListCache()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{"data": "ok"})
 }
 
@@ -77,6 +99,11 @@ func DeleteById(c *gin.Context) {
 		return
 	}
 	err = db.DeleteUserById(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = cache.DeleteUserListCache()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
