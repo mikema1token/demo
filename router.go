@@ -11,5 +11,5 @@ func main() {
 	router.GET("/users", service.GetuserList)
 	router.POST("/user", service.CreateUser)
 	router.DELETE("/user:id", service.DeleteById)
-
+	router.GET("/order/list", service.GetOrderList)
 }
