@@ -54,6 +54,7 @@ func GetuserList(c *gin.Context) {
 			userList = append(userList, NewUserFromUserModel(userModel))
 		}
 		c.JSON(http.StatusOK, gin.H{"data": userList})
+		return
 
 	}
 	userModelList, err := db.GetUserList()
