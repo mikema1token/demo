@@ -61,6 +61,7 @@ func GetuserList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	cache.SetUserListCache(userModelList)
 	for _, userModel := range userModelList {
 		userList = append(userList, NewUserFromUserModel(userModel))
 	}
